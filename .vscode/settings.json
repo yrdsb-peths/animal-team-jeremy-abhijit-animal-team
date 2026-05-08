@@ -1,5 +1,5 @@
 {
-  "java.project.referencedLibraries": ["lib/greenfoot.jar"],
+  "java.project.referencedLibraries": ["lib/*.jar"],
 
   "files.exclude": {
     "**/*.class": true,
