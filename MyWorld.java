@@ -14,9 +14,14 @@ public class MyWorld extends World {
         super(WORLD_WIDTH, WORLD_HEIGHT, 1);
         prepare();
 
-        client = new GameClient();
-        client.connectAsync();
-        showText(client.getStatusLine(), getWidth() / 2, 16);
+        try {
+            client = new GameClient();
+            client.connectAsync();
+            showText(client.getStatusLine(), getWidth() / 2, 16);
+        } catch (NoClassDefFoundError error) {
+            client = null;
+            showText("KryoNet not found. Add jars to Greenfoot userlib.", getWidth() / 2, 16);
+        }
     }
 
     public void act() {
