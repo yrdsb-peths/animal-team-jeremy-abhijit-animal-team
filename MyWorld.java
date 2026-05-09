@@ -31,7 +31,7 @@ public class MyWorld extends World {
 
         GameClient.Position remotePos = client.consumeRemotePosition();
         if (remotePos != null) {
-            remoteElephant.setLocation(remotePos.x, remotePos.y);
+            remoteElephant.setTargetPosition(remotePos.x, remotePos.y);
         }
 
         GameClient.Position applePos = client.consumeApplePosition();
