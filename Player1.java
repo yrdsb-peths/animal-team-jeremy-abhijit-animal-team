@@ -1,23 +1,7 @@
-import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
-
-/**
- * Write a description of class Player1 here.
- * 
- * @author (your name) 
- * @version (a version number or a date)
- */
-public class Player1 extends Actor
+public class Player1 extends PlayerBase
 {
-    /**
-     * Act - do whatever the Player1 wants to do. This method is called whenever
-     * the 'Act' or 'Run' button gets pressed in the environment.
-     */
     public Player1()
     {
-        GreenfootImage p1 = new GreenfootImage("");
-    }
-    public void act()
-    {
-        // Add your action code here.
+        super("Player One", true);
     }
 }
