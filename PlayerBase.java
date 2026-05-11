@@ -3,10 +3,13 @@ import java.util.List;
 
 public class PlayerBase extends Actor
 {
-    private static final int BASE_SPEED = 2;
-    private static final int BOMBER_SPEED = 3;
-    private static final int BLINK_TICK = 10;
+    private static final int BASE_SPEED = 6;
+    private static final double BOMBER_SPEED = 6.5;
+    private static final int BLINK_TICK = 6;
     private static final int TRANSFER_COOLDOWN_FRAMES = 60;
+    private static final int UNSTUCK_RADIUS = 8;
+    private static final int STUCK_FRAMES = 4;
+    private static final int COLLISION_RADIUS = 18;
 
     private final boolean controlled;
     private final String displayName;
@@ -15,8 +18,11 @@ public class PlayerBase extends Actor
     private boolean bomber;
     private int blinkCounter;
     private int transferCooldown;
+    private int stuckFrames;
+    private int lastX;
+    private int lastY;
 
-    private static final int SPRITE_HEIGHT = 72;
+    private static final int SPRITE_HEIGHT = 64;
     private static final int ROTATION_OFFSET_DEGREES = 90;
 
     private GreenfootImage cursedFrame1;
@@ -46,6 +52,12 @@ public class PlayerBase extends Actor
             attachNameTag();
         }
 
+        if (lastX == 0 && lastY == 0)
+        {
+            lastX = getX();
+            lastY = getY();
+        }
+
         MyWorld world = (MyWorld)getWorld();
         if (world.isRoundEnding())
         {
@@ -55,7 +67,8 @@ public class PlayerBase extends Actor
 
         if (controlled)
         {
-            handleMovement();
+            boolean moved = handleMovement();
+            handleStuck(moved);
             faceMouse();
         }
 
@@ -72,6 +85,14 @@ public class PlayerBase extends Actor
         if (!bomber)
         {
             setImage(survivorFrame);
+        }
+        if (bomber && controlled)
+        {
+            MyWorld world = (MyWorld)getWorld();
+            if (world != null)
+            {
+                world.showCursedPopup();
+            }
         }
     }
 
@@ -101,7 +122,7 @@ public class PlayerBase extends Actor
 
     public boolean overlapsWall()
     {
-        return isTouching(Wall.class);
+        return collidesWithWallAt(getX(), getY());
     }
 
     public boolean overlaps(PlayerBase other)
@@ -109,31 +130,46 @@ public class PlayerBase extends Actor
         return intersects(other);
     }
 
-    private void handleMovement()
+    private boolean handleMovement()
     {
-        int speed = bomber ? BOMBER_SPEED : BASE_SPEED;
+        double speed = bomber ? BOMBER_SPEED : BASE_SPEED;
         int dx = 0;
         int dy = 0;
+        boolean inputActive = false;
 
         if (Greenfoot.isKeyDown("w"))
         {
-            dy -= speed;
+            dy -= (int)speed;
+            inputActive = true;
         }
         if (Greenfoot.isKeyDown("s"))
         {
-            dy += speed;
+            dy += (int)speed;
+            inputActive = true;
         }
         if (Greenfoot.isKeyDown("a"))
         {
-            dx -= speed;
+            dx -= (int)speed;
+            inputActive = true;
         }
         if (Greenfoot.isKeyDown("d"))
         {
-            dx += speed;
+            dx += (int)speed;
+            inputActive = true;
+        }
+
+        if (!inputActive)
+        {
+            return false;
         }
 
         moveAxis(dx, 0);
         moveAxis(0, dy);
+
+        boolean moved = getX() != lastX || getY() != lastY;
+        lastX = getX();
+        lastY = getY();
+        return moved;
     }
 
     private void moveAxis(int dx, int dy)
@@ -143,13 +179,87 @@ public class PlayerBase extends Actor
             return;
         }
 
-        int oldX = getX();
-        int oldY = getY();
-        setLocation(oldX + dx, oldY + dy);
-        if (isTouching(Wall.class))
+        int steps = Math.abs(dx != 0 ? dx : dy);
+        int stepX = Integer.signum(dx);
+        int stepY = Integer.signum(dy);
+
+        for (int i = 0; i < steps; i++)
         {
-            setLocation(oldX, oldY);
+            int nextX = getX() + stepX;
+            int nextY = getY() + stepY;
+            if (collidesWithWallAt(nextX, nextY))
+            {
+                break;
+            }
+            setLocation(nextX, nextY);
         }
+    }
+
+    private void handleStuck(boolean moved)
+    {
+        if (collidesWithWallAt(getX(), getY()) && !moved)
+        {
+            stuckFrames++;
+            if (stuckFrames >= STUCK_FRAMES)
+            {
+                resolveWallOverlap();
+                stuckFrames = 0;
+            }
+            return;
+        }
+
+        stuckFrames = 0;
+    }
+
+    private void resolveWallOverlap()
+    {
+        if (!collidesWithWallAt(getX(), getY()))
+        {
+            return;
+        }
+
+        int startX = getX();
+        int startY = getY();
+
+        for (int d = 1; d <= UNSTUCK_RADIUS; d++)
+        {
+            int[] dirs = {0, -d, 0, d, -d, 0, d, 0, -d, -d, d, -d, -d, d, d, d};
+            for (int i = 0; i < dirs.length; i += 2)
+            {
+                setLocation(startX + dirs[i], startY + dirs[i+1]);
+                if (!collidesWithWallAt(getX(), getY()))
+                {
+                    return;
+                }
+            }
+        }
+
+        setLocation(startX, startY);
+    }
+
+    private boolean collidesWithWallAt(int x, int y)
+    {
+        if (getWorld() == null)
+        {
+            return false;
+        }
+
+        int r = COLLISION_RADIUS;
+        int d = (int)Math.round(r * 0.7);
+        int[][] offsets = new int[][] {
+            {0, -r}, {0, r}, {-r, 0}, {r, 0},
+            {-d, -d}, {d, -d}, {-d, d}, {d, d}
+        };
+
+        for (int[] offset : offsets)
+        {
+            if (!getWorld().getObjectsAt(x + offset[0], y + offset[1], Wall.class).isEmpty())
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void faceMouse()
