@@ -13,6 +13,10 @@ public class PlayerBase extends Actor
 
     private final boolean controlled;
     private final String displayName;
+    private final String upKey;
+    private final String downKey;
+    private final String leftKey;
+    private final String rightKey;
 
     private NameTag nameTag;
     private boolean bomber;
@@ -29,10 +33,14 @@ public class PlayerBase extends Actor
     private GreenfootImage cursedFrame2;
     private GreenfootImage survivorFrame;
 
-    public PlayerBase(String displayName, boolean controlled)
+    public PlayerBase(String displayName, boolean controlled, String upKey, String downKey, String leftKey, String rightKey)
     {
         this.displayName = displayName;
         this.controlled = controlled;
+        this.upKey = upKey;
+        this.downKey = downKey;
+        this.leftKey = leftKey;
+        this.rightKey = rightKey;
 
         cursedFrame1 = loadScaled("Cursed-Frame-1.png");
         cursedFrame2 = loadScaled("Cursed-Frame-2.png");
@@ -137,22 +145,22 @@ public class PlayerBase extends Actor
         int dy = 0;
         boolean inputActive = false;
 
-        if (Greenfoot.isKeyDown("w"))
+        if (Greenfoot.isKeyDown(upKey))
         {
             dy -= (int)speed;
             inputActive = true;
         }
-        if (Greenfoot.isKeyDown("s"))
+        if (Greenfoot.isKeyDown(downKey))
         {
             dy += (int)speed;
             inputActive = true;
         }
-        if (Greenfoot.isKeyDown("a"))
+        if (Greenfoot.isKeyDown(leftKey))
         {
             dx -= (int)speed;
             inputActive = true;
         }
-        if (Greenfoot.isKeyDown("d"))
+        if (Greenfoot.isKeyDown(rightKey))
         {
             dx += (int)speed;
             inputActive = true;
