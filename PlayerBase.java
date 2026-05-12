@@ -293,6 +293,7 @@ public class PlayerBase extends Actor
             }
             setBomber(false);
             other.setBomber(true);
+            ((MyWorld)getWorld()).setBombCarrier(other instanceof Player1 ? 1 : 2);
             transferCooldown = TRANSFER_COOLDOWN_FRAMES;
             other.transferCooldown = TRANSFER_COOLDOWN_FRAMES;
             break;

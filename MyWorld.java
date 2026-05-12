@@ -8,22 +8,35 @@ public class MyWorld extends World
     private static final int WORLD_WIDTH = 1000;
     private static final int WORLD_HEIGHT = 700;
     private static final int ROUND_LENGTH_MS = 120000;
-    private static final int RESET_DELAY_FRAMES = 60;
+    private static final int RESET_DELAY_FRAMES = 180;
     private static final int MIN_SPAWN_DISTANCE = 220;
 
     private final Random random = new Random();
     private final List<PlayerBase> players = new ArrayList<>();
 
     private TimerDisplay timerDisplay;
+    private EndMessage endMessage;
     private Player1 player1;
     private long roundStartMs;
     private boolean roundEnding;
     private int resetCountdown;
-
+    
+    private int p1Score = 0;
+    private int p2Score = 0;
+    
+    private int bombCarrier = 1;
+    public int getBombCarrier()
+    {
+        return bombCarrier;
+    }
+    public void setBombCarrier(int playerNum)
+    {
+        bombCarrier = playerNum;
+    }
     public MyWorld()
     {
         super(WORLD_WIDTH, WORLD_HEIGHT, 1);
-        setPaintOrder(TimerDisplay.class, NameTag.class, Explosion.class, PlayerBase.class, Wall.class);
+        setPaintOrder(EndMessage.class, TimerDisplay.class, NameTag.class, Explosion.class, PlayerBase.class, Wall.class);
         buildWalls();
         setupRound();
     }
@@ -82,6 +95,7 @@ public class MyWorld extends World
         resetCountdown = RESET_DELAY_FRAMES;
 
         PlayerBase bomber = getBomber();
+        showEndMessage(getWinnerText(bomber));
         if (bomber != null && bomber.getWorld() != null)
         {
             int x = bomber.getX();
@@ -97,6 +111,8 @@ public class MyWorld extends World
         removeObjects(getObjects(PlayerBase.class));
         removeObjects(getObjects(NameTag.class));
         removeObjects(getObjects(Explosion.class));
+        removeObjects(getObjects(EndMessage.class));
+        endMessage = null;
         player1 = null;
         players.clear();
         setupRound();
@@ -192,6 +208,7 @@ public class MyWorld extends World
         {
             player.setBomber(player == bomber);
         }
+        setBombCarrier(bomber instanceof Player1 ? 1 : 2);
     }
 
     private PlayerBase getBomber()
@@ -204,6 +221,29 @@ public class MyWorld extends World
             }
         }
         return null;
+    }
+
+    private String getWinnerText(PlayerBase bomber)
+    {
+        if (bomber instanceof Player1)
+        {
+            return "Player 2 Wins!";
+        }
+        if (bomber instanceof Player2)
+        {
+            return "Player 1 Wins!";
+        }
+        return "Round Over";
+    }
+
+    private void showEndMessage(String text)
+    {
+        if (endMessage != null)
+        {
+            removeObject(endMessage);
+        }
+        endMessage = new EndMessage(text, WORLD_WIDTH, WORLD_HEIGHT);
+        addObject(endMessage, WORLD_WIDTH / 2, WORLD_HEIGHT / 2);
     }
 
     private void buildWalls()
@@ -237,5 +277,14 @@ public class MyWorld extends World
 
         addObject(new Wall(lLen, thickness), WORLD_WIDTH - lOffset - lLen / 2, WORLD_HEIGHT - lOffset);
         addObject(new Wall(thickness, lLen), WORLD_WIDTH - lOffset, WORLD_HEIGHT - lOffset - lLen / 2);
+    }
+    
+    public int getPlayer1Score()
+    {
+        return p1Score;
+    }
+    public int getPlayer2Score()
+    {
+        return p2Score;
     }
 }
