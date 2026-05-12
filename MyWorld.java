@@ -116,12 +116,6 @@ public class MyWorld extends World
 
         Player2 player2 = new Player2();
         addPlayerWithSpawn(player2, player1);
-
-        Player3 player3 = new Player3();
-        addPlayerWithSpawn(player3, player1);
-
-        Player4 player4 = new Player4();
-        addPlayerWithSpawn(player4, player1);
     }
 
     public void showCursedPopup()

@@ -77,7 +77,6 @@ public class PlayerBase extends Actor
         {
             boolean moved = handleMovement();
             handleStuck(moved);
-            faceMouse();
         }
 
         handleBomberTransfer();
