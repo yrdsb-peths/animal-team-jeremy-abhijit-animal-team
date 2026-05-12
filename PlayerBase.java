@@ -137,21 +137,25 @@ public class PlayerBase extends Actor
         if (Greenfoot.isKeyDown(upKey))
         {
             dy -= (int)speed;
+            this.setRotation(0);
             inputActive = true;
         }
         if (Greenfoot.isKeyDown(downKey))
         {
             dy += (int)speed;
+            this.setRotation(180);
             inputActive = true;
         }
         if (Greenfoot.isKeyDown(leftKey))
         {
             dx -= (int)speed;
+            this.setRotation(270);
             inputActive = true;
         }
         if (Greenfoot.isKeyDown(rightKey))
         {
             dx += (int)speed;
+            this.setRotation(90);
             inputActive = true;
         }
 
