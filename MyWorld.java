@@ -1,4 +1,4 @@
-import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
+import greenfoot.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -15,7 +15,6 @@ public class MyWorld extends World
     private final List<PlayerBase> players = new ArrayList<>();
 
     private TimerDisplay timerDisplay;
-    private CursedOverlay cursedOverlay;
     private Player1 player1;
     private long roundStartMs;
     private boolean roundEnding;
@@ -24,7 +23,7 @@ public class MyWorld extends World
     public MyWorld()
     {
         super(WORLD_WIDTH, WORLD_HEIGHT, 1);
-        setPaintOrder(TimerDisplay.class, CursedPopup.class, CursedOverlay.class, NameTag.class, Explosion.class, PlayerBase.class, Wall.class);
+        setPaintOrder(TimerDisplay.class, NameTag.class, Explosion.class, PlayerBase.class, Wall.class);
         buildWalls();
         setupRound();
     }
@@ -32,7 +31,6 @@ public class MyWorld extends World
     public void act()
     {
         updateTimer();
-        updateCursedOverlay();
         if (roundEnding)
         {
             resetCountdown--;
@@ -99,9 +97,6 @@ public class MyWorld extends World
         removeObjects(getObjects(PlayerBase.class));
         removeObjects(getObjects(NameTag.class));
         removeObjects(getObjects(Explosion.class));
-        removeObjects(getObjects(CursedPopup.class));
-        removeObjects(getObjects(CursedOverlay.class));
-        cursedOverlay = null;
         player1 = null;
         players.clear();
         setupRound();
@@ -116,11 +111,6 @@ public class MyWorld extends World
 
         Player2 player2 = new Player2();
         addPlayerWithSpawn(player2, player1);
-    }
-
-    public void showCursedPopup()
-    {
-        addObject(new CursedPopup(), WORLD_WIDTH / 2, 90);
     }
 
     private void addPlayerWithSpawn(PlayerBase player, PlayerBase avoidPlayer)
@@ -247,23 +237,5 @@ public class MyWorld extends World
 
         addObject(new Wall(lLen, thickness), WORLD_WIDTH - lOffset - lLen / 2, WORLD_HEIGHT - lOffset);
         addObject(new Wall(thickness, lLen), WORLD_WIDTH - lOffset, WORLD_HEIGHT - lOffset - lLen / 2);
-    }
-
-    private void updateCursedOverlay()
-    {
-        boolean show = player1 != null && player1.getWorld() != null && player1.isBomber() && !roundEnding;
-        if (show)
-        {
-            if (cursedOverlay == null || cursedOverlay.getWorld() == null)
-            {
-                cursedOverlay = new CursedOverlay(WORLD_WIDTH, WORLD_HEIGHT);
-                addObject(cursedOverlay, WORLD_WIDTH / 2, WORLD_HEIGHT / 2);
-            }
-        }
-        else if (cursedOverlay != null && cursedOverlay.getWorld() != null)
-        {
-            removeObject(cursedOverlay);
-            cursedOverlay = null;
-        }
     }
 }

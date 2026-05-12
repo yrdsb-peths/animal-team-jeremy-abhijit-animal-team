@@ -1,4 +1,4 @@
-import greenfoot.*;  // (World, Actor, GreenfootImage, Greenfoot and MouseInfo)
+import greenfoot.*;
 import java.util.List;
 
 public class PlayerBase extends Actor
@@ -27,8 +27,6 @@ public class PlayerBase extends Actor
     private int lastY;
 
     private static final int SPRITE_HEIGHT = 64;
-    private static final int ROTATION_OFFSET_DEGREES = 90;
-
     private GreenfootImage cursedFrame1;
     private GreenfootImage cursedFrame2;
     private GreenfootImage survivorFrame;
@@ -92,14 +90,6 @@ public class PlayerBase extends Actor
         if (!bomber)
         {
             setImage(survivorFrame);
-        }
-        if (bomber && controlled)
-        {
-            MyWorld world = (MyWorld)getWorld();
-            if (world != null)
-            {
-                world.showCursedPopup();
-            }
         }
     }
 
@@ -267,16 +257,6 @@ public class PlayerBase extends Actor
         }
 
         return false;
-    }
-
-    private void faceMouse()
-    {
-        MouseInfo mouse = Greenfoot.getMouseInfo();
-        if (mouse != null)
-        {
-            turnTowards(mouse.getX(), mouse.getY());
-            setRotation(getRotation() + ROTATION_OFFSET_DEGREES);
-        }
     }
 
     private void handleBomberTransfer()
