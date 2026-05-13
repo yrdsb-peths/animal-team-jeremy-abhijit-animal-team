@@ -94,14 +94,14 @@ public class MyWorld extends World
         roundEnding = true;
         resetCountdown = RESET_DELAY_FRAMES;
 
-        PlayerBase bomber = getBomber();
-        showEndMessage(getWinnerText(bomber));
-        if (bomber != null && bomber.getWorld() != null)
+        PlayerBase explodedPlayer = getBomber();
+        showEndMessage(getWinnerText(explodedPlayer), getEndDetail(explodedPlayer));
+        if (explodedPlayer != null && explodedPlayer.getWorld() != null)
         {
-            int x = bomber.getX();
-            int y = bomber.getY();
-            bomber.removeNameTag();
-            removeObject(bomber);
+            int x = explodedPlayer.getX();
+            int y = explodedPlayer.getY();
+            explodedPlayer.removeNameTag();
+            removeObject(explodedPlayer);
             addObject(new Explosion(), x, y);
         }
     }
@@ -223,26 +223,39 @@ public class MyWorld extends World
         return null;
     }
 
-    private String getWinnerText(PlayerBase bomber)
+    private String getWinnerText(PlayerBase explodedPlayer)
     {
-        if (bomber instanceof Player1)
+        if (explodedPlayer instanceof Player1)
         {
             return "Player 2 Wins!";
         }
-        if (bomber instanceof Player2)
+        if (explodedPlayer instanceof Player2)
         {
             return "Player 1 Wins!";
         }
-        return "Round Over";
+        return "Time's Up!";
     }
 
-    private void showEndMessage(String text)
+    private String getEndDetail(PlayerBase explodedPlayer)
+    {
+        if (explodedPlayer instanceof Player1)
+        {
+            return "Player 1 blew up when the 2-minute timer ended.";
+        }
+        if (explodedPlayer instanceof Player2)
+        {
+            return "Player 2 blew up when the 2-minute timer ended.";
+        }
+        return "The player holding the bomb loses when time expires.";
+    }
+
+    private void showEndMessage(String title, String detail)
     {
         if (endMessage != null)
         {
             removeObject(endMessage);
         }
-        endMessage = new EndMessage(text, WORLD_WIDTH, WORLD_HEIGHT);
+        endMessage = new EndMessage(title, detail, WORLD_WIDTH, WORLD_HEIGHT);
         addObject(endMessage, WORLD_WIDTH / 2, WORLD_HEIGHT / 2);
     }
 
