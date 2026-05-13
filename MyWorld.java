@@ -9,15 +9,11 @@ public class MyWorld extends World
     private static final int WORLD_HEIGHT = 700;
     private static final int ROUND_LENGTH_MS = 120000;
     private static final int MAX_ROUNDS = 5;
-    private static final int SHRINK_INTERVAL_MS = 20000;
-    private static final int SHRINK_STEP = 24;
-    private static final int MAX_SHRINK_LEVEL = 5;
     private static final int RESET_DELAY_FRAMES = 180;
     private static final int MIN_SPAWN_DISTANCE = 220;
 
     private final Random random = new Random();
     private final List<PlayerBase> players = new ArrayList<>();
-    private final List<Wall> walls = new ArrayList<>();
 
     private TimerDisplay timerDisplay;
     private Label player1ScoreLabel;
@@ -30,7 +26,6 @@ public class MyWorld extends World
     private boolean matchOver;
     private int resetCountdown;
     private int roundsPlayed;
-    private int currentShrinkLevel;
     
     private int p1Score = 0;
     private int p2Score = 0;
@@ -48,6 +43,7 @@ public class MyWorld extends World
     {
         super(WORLD_WIDTH, WORLD_HEIGHT, 1);
         setPaintOrder(EndMessage.class, Label.class, NameTag.class, Explosion.class, PlayerBase.class, Wall.class);
+        buildWalls();
         setupRound();
     }
 
@@ -97,7 +93,6 @@ public class MyWorld extends World
             addObject(roundLabel, WORLD_WIDTH / 2, 70);
         }
 
-        applyShrinkLevel(0);
         spawnPlayers();
         pickBomber();
         roundStartMs = System.currentTimeMillis();
@@ -109,10 +104,7 @@ public class MyWorld extends World
 
     private void updateTimer()
     {
-        int elapsedMs = (int)(System.currentTimeMillis() - roundStartMs);
-        updateMapShrink(elapsedMs);
-
-        int remainingMs = ROUND_LENGTH_MS - elapsedMs;
+        int remainingMs = (int)(ROUND_LENGTH_MS - (System.currentTimeMillis() - roundStartMs));
         int remainingSeconds = remainingMs / 1000;
         if (remainingSeconds <= 0 && !roundEnding)
         {
@@ -122,22 +114,6 @@ public class MyWorld extends World
         {
             timerDisplay.setSecondsRemaining(Math.max(0, remainingSeconds));
         }
-    }
-
-    private void updateMapShrink(int elapsedMs)
-    {
-        int shrinkLevel = Math.min(MAX_SHRINK_LEVEL, Math.max(0, elapsedMs / SHRINK_INTERVAL_MS));
-        if (shrinkLevel != currentShrinkLevel)
-        {
-            applyShrinkLevel(shrinkLevel);
-        }
-    }
-
-    private void applyShrinkLevel(int shrinkLevel)
-    {
-        currentShrinkLevel = shrinkLevel;
-        rebuildWalls();
-        movePlayersOutOfWalls();
     }
 
     private void triggerExplosion()
@@ -379,92 +355,36 @@ public class MyWorld extends World
         addObject(endMessage, WORLD_WIDTH / 2, WORLD_HEIGHT / 2);
     }
 
-    private void rebuildWalls()
+    private void buildWalls()
     {
         int thickness = 28;
         int borderGap = 160;
-        int inset = currentShrinkLevel * SHRINK_STEP;
+        int topBottomSegment = (WORLD_WIDTH - borderGap) / 2;
+        addObject(new Wall(topBottomSegment, thickness), topBottomSegment / 2, thickness / 2);
+        addObject(new Wall(topBottomSegment, thickness), WORLD_WIDTH - topBottomSegment / 2, thickness / 2);
+        addObject(new Wall(topBottomSegment, thickness), topBottomSegment / 2, WORLD_HEIGHT - thickness / 2);
+        addObject(new Wall(topBottomSegment, thickness), WORLD_WIDTH - topBottomSegment / 2, WORLD_HEIGHT - thickness / 2);
 
-        removeObjects(walls);
-        walls.clear();
-
-        int topBottomSegment = (WORLD_WIDTH - (inset * 2) - borderGap) / 2;
-        addWall(topBottomSegment, thickness, inset + topBottomSegment / 2, inset + thickness / 2);
-        addWall(topBottomSegment, thickness, WORLD_WIDTH - inset - topBottomSegment / 2, inset + thickness / 2);
-        addWall(topBottomSegment, thickness, inset + topBottomSegment / 2, WORLD_HEIGHT - inset - thickness / 2);
-        addWall(topBottomSegment, thickness, WORLD_WIDTH - inset - topBottomSegment / 2, WORLD_HEIGHT - inset - thickness / 2);
-
-        int sideSegment = (WORLD_HEIGHT - (inset * 2) - borderGap) / 2;
-        addWall(thickness, sideSegment, inset + thickness / 2, inset + sideSegment / 2);
-        addWall(thickness, sideSegment, inset + thickness / 2, WORLD_HEIGHT - inset - sideSegment / 2);
-        addWall(thickness, sideSegment, WORLD_WIDTH - inset - thickness / 2, inset + sideSegment / 2);
-        addWall(thickness, sideSegment, WORLD_WIDTH - inset - thickness / 2, WORLD_HEIGHT - inset - sideSegment / 2);
+        int sideSegment = (WORLD_HEIGHT - borderGap) / 2;
+        addObject(new Wall(thickness, sideSegment), thickness / 2, sideSegment / 2);
+        addObject(new Wall(thickness, sideSegment), thickness / 2, WORLD_HEIGHT - sideSegment / 2);
+        addObject(new Wall(thickness, sideSegment), WORLD_WIDTH - thickness / 2, sideSegment / 2);
+        addObject(new Wall(thickness, sideSegment), WORLD_WIDTH - thickness / 2, WORLD_HEIGHT - sideSegment / 2);
 
         int lLen = 130;
         int lOffset = 140;
 
-        addWall(lLen, thickness, inset + lOffset + lLen / 2, inset + lOffset);
-        addWall(thickness, lLen, inset + lOffset, inset + lOffset + lLen / 2);
+        addObject(new Wall(lLen, thickness), lOffset + lLen / 2, lOffset);
+        addObject(new Wall(thickness, lLen), lOffset, lOffset + lLen / 2);
 
-        addWall(lLen, thickness, WORLD_WIDTH - inset - lOffset - lLen / 2, inset + lOffset);
-        addWall(thickness, lLen, WORLD_WIDTH - inset - lOffset, inset + lOffset + lLen / 2);
+        addObject(new Wall(lLen, thickness), WORLD_WIDTH - lOffset - lLen / 2, lOffset);
+        addObject(new Wall(thickness, lLen), WORLD_WIDTH - lOffset, lOffset + lLen / 2);
 
-        addWall(lLen, thickness, inset + lOffset + lLen / 2, WORLD_HEIGHT - inset - lOffset);
-        addWall(thickness, lLen, inset + lOffset, WORLD_HEIGHT - inset - lOffset - lLen / 2);
+        addObject(new Wall(lLen, thickness), lOffset + lLen / 2, WORLD_HEIGHT - lOffset);
+        addObject(new Wall(thickness, lLen), lOffset, WORLD_HEIGHT - lOffset - lLen / 2);
 
-        addWall(lLen, thickness, WORLD_WIDTH - inset - lOffset - lLen / 2, WORLD_HEIGHT - inset - lOffset);
-        addWall(thickness, lLen, WORLD_WIDTH - inset - lOffset, WORLD_HEIGHT - inset - lOffset - lLen / 2);
-    }
-
-    private void addWall(int width, int height, int x, int y)
-    {
-        Wall wall = new Wall(width, height);
-        walls.add(wall);
-        addObject(wall, x, y);
-    }
-
-    private void movePlayersOutOfWalls()
-    {
-        for (PlayerBase player : getObjects(PlayerBase.class))
-        {
-            movePlayerTowardCenter(player);
-        }
-    }
-
-    private void movePlayerTowardCenter(PlayerBase player)
-    {
-        if (player == null || player.getWorld() == null || !player.overlapsWall())
-        {
-            return;
-        }
-
-        int x = player.getX();
-        int y = player.getY();
-        int centerX = WORLD_WIDTH / 2;
-        int centerY = WORLD_HEIGHT / 2;
-
-        for (int i = 0; i < 240 && player.overlapsWall(); i++)
-        {
-            if (x < centerX)
-            {
-                x++;
-            }
-            else if (x > centerX)
-            {
-                x--;
-            }
-
-            if (y < centerY)
-            {
-                y++;
-            }
-            else if (y > centerY)
-            {
-                y--;
-            }
-
-            player.setLocation(x, y);
-        }
+        addObject(new Wall(lLen, thickness), WORLD_WIDTH - lOffset - lLen / 2, WORLD_HEIGHT - lOffset);
+        addObject(new Wall(thickness, lLen), WORLD_WIDTH - lOffset, WORLD_HEIGHT - lOffset - lLen / 2);
     }
     
     public int getPlayer1Score()
