@@ -7,7 +7,7 @@ public class MyWorld extends World
 {
     private static final int WORLD_WIDTH = 1000;
     private static final int WORLD_HEIGHT = 700;
-    private static final int ROUND_LENGTH_MS = 120000;
+    private static final int ROUND_LENGTH_MS = 5000;
     private static final int RESET_DELAY_FRAMES = 180;
     private static final int MIN_SPAWN_DISTANCE = 220;
 
@@ -240,11 +240,11 @@ public class MyWorld extends World
     {
         if (explodedPlayer instanceof Player1)
         {
-            return "Player 1 blew up when the 2-minute timer ended.";
+            return "Player 1 blew up when the 5-second timer ended.";
         }
         if (explodedPlayer instanceof Player2)
         {
-            return "Player 2 blew up when the 2-minute timer ended.";
+            return "Player 2 blew up when the 5-second timer ended.";
         }
         return "The player holding the bomb loses when time expires.";
     }
