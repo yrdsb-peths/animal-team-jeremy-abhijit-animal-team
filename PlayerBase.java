@@ -130,32 +130,28 @@ public class PlayerBase extends Actor
     private boolean handleMovement()
     {
         double speed = bomber ? BOMBER_SPEED : BASE_SPEED;
-        int dx = 0;
-        int dy = 0;
+        double dx = 0;
+        double dy = 0;
         boolean inputActive = false;
 
         if (Greenfoot.isKeyDown(upKey))
         {
-            dy -= (int)speed;
-            this.setRotation(0);
+            dy -= 1;
             inputActive = true;
         }
         if (Greenfoot.isKeyDown(downKey))
         {
-            dy += (int)speed;
-            this.setRotation(180);
+            dy += 1;
             inputActive = true;
         }
         if (Greenfoot.isKeyDown(leftKey))
         {
-            dx -= (int)speed;
-            this.setRotation(270);
+            dx -= 1;
             inputActive = true;
         }
         if (Greenfoot.isKeyDown(rightKey))
         {
-            dx += (int)speed;
-            this.setRotation(90);
+            dx += 1;
             inputActive = true;
         }
 
@@ -164,13 +160,66 @@ public class PlayerBase extends Actor
             return false;
         }
 
-        moveAxis(dx, 0);
-        moveAxis(0, dy);
+        if (dx != 0 && dy != 0)
+        {
+            double diag = speed / Math.sqrt(2);
+            dx *= diag;
+            dy *= diag;
+        }
+        else
+        {
+            dx *= speed;
+            dy *= speed;
+        }
+
+        setRotationFromVector((int)Math.signum(dx), (int)Math.signum(dy));
+
+        int stepX = (int)Math.round(dx);
+        int stepY = (int)Math.round(dy);
+
+        moveAxis(stepX, 0);
+        moveAxis(0, stepY);
 
         boolean moved = getX() != lastX || getY() != lastY;
         lastX = getX();
         lastY = getY();
         return moved;
+    }
+
+    private void setRotationFromVector(int dx, int dy)
+    {
+        if (dx == 0 && dy < 0)
+        {
+            setRotation(0);
+        }
+        else if (dx > 0 && dy < 0)
+        {
+            setRotation(45);
+        }
+        else if (dx > 0 && dy == 0)
+        {
+            setRotation(90);
+        }
+        else if (dx > 0 && dy > 0)
+        {
+            setRotation(135);
+        }
+        else if (dx == 0 && dy > 0)
+        {
+            setRotation(180);
+        }
+        else if (dx < 0 && dy > 0)
+        {
+            setRotation(225);
+        }
+        else if (dx < 0 && dy == 0)
+        {
+            setRotation(270);
+        }
+        else if (dx < 0 && dy < 0)
+        {
+            setRotation(315);
+        }
     }
 
     private void moveAxis(int dx, int dy)
